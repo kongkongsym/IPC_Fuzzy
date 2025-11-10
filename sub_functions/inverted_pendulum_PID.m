@@ -231,8 +231,36 @@ title('摆杆角度跟踪误差', 'FontSize', 12, 'FontWeight', 'bold');
 
 % Calculate performance metrics
 subplot(2,2,3);
-settling_time_x = find(abs(error_x) < 0.05, 1) * Ts;
-settling_time_q = find(abs(error_q)*180/pi < 2, 1) * Ts;
+% Settling time: find the last time the error exceeds the threshold
+% Then the settling time is the time when it enters and stays within the threshold
+threshold_x = 0.05;  % 5cm threshold for cart position
+threshold_q = 2;     % 2 degree threshold for pendulum angle
+
+% Find last time error exceeded threshold
+last_exceed_x = find(abs(error_x) > threshold_x, 1, 'last');
+last_exceed_q = find(abs(error_q)*180/pi > threshold_q, 1, 'last');
+
+% Settling time is when it permanently enters the threshold region
+if isempty(last_exceed_x)
+    settling_time_x = 0;  % Always within threshold
+else
+    settling_time_x = last_exceed_x * Ts;
+end
+
+if isempty(last_exceed_q)
+    settling_time_q = 0;  % Always within threshold
+else
+    settling_time_q = last_exceed_q * Ts;
+end
+
+% If never settles within the simulation time, mark as "not settled"
+if last_exceed_x == length(error_x)
+    settling_time_x = NaN;  % Not settled
+end
+if last_exceed_q == length(error_q)
+    settling_time_q = NaN;  % Not settled
+end
+
 overshoot_q = max(abs(error_q(1:min(500,end))))*180/pi;
 
 bar_data = [settling_time_x, settling_time_q; overshoot_q, abs(error_x(1))];
