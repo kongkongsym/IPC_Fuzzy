@@ -265,7 +265,7 @@ end
 
 overshoot_q = max(abs(error_q(1:min(500,end))))*180/pi;
 
-bar_data = [settling_time_x, settling_time_q; overshoot_q, abs(error_x(1))];
+bar_data = [settling_time_x, settling_time_q; abs(error_x(1)), overshoot_q];
 b = bar(bar_data);
 set(gca, 'XTickLabel', {'调节时间 [s]', '最大偏差'});
 ylabel('数值', 'FontSize', 11, 'FontWeight', 'bold');
